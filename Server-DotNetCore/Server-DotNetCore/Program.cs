@@ -18,11 +18,11 @@ class Program
     {
         Directory.CreateDirectory("server_files");
 
-        // Initialize Redis connection
+        // init redis connection
         var redisConnectionString = Environment.GetEnvironmentVariable("Redis__ConnectionString") ?? "localhost:6379";
         _redisService = new RedisService(redisConnectionString);
 
-        // Initialize file count in Redis
+        // init file count in Redis
         await UpdateFileCountInRedisAsync();
 
         TcpListener listener = new TcpListener(IPAddress.Any, ServerConfig.Port);

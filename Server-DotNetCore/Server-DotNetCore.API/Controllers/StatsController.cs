@@ -24,6 +24,7 @@ public class StatsController : ControllerBase
         }
         catch (Exception ex)
         {
+            // its  much better to have a global error handler instead of try catch many times. i did not as its a small test
             return StatusCode(500, new { error = $"Error reading from Redis: {ex.Message}" });
         }
     }
@@ -38,6 +39,7 @@ public class StatsController : ControllerBase
         }
         catch (Exception ex)
         {
+            // its  much better to have a global error handler instead of try catch many times. 
             return StatusCode(500, new { error = $"Error reading from Redis: {ex.Message}" });
         }
     }
@@ -57,6 +59,7 @@ public class StatsController : ControllerBase
         }
         catch (Exception ex)
         {
+            // its  much better to have a global error handler instead of try catch many times. 
             return StatusCode(500, new { error = $"Error reading from Redis: {ex.Message}" });
         }
     }

@@ -38,16 +38,16 @@ public class PutFileHandler : ICommandHandler
             received += read;
         }
 
-        // Notify other clients about the upload
+        // notify other clients
         await NotifyOtherClientsAsync(fileName);
         
-        // Update file count in Redis
+        // update file count on redis
         await Program.UpdateFileCountInRedisAsync();
     }
 
     private async Task NotifyOtherClientsAsync(string fileName)
     {
-        // Only notify if we have a current client reference (main ServerClient implementation)
+        // only notify if we have a current client reference 
         if (_currentClient == null) return;
         
         var clients = Program.GetConnectedClients();
@@ -56,7 +56,7 @@ public class PutFileHandler : ICommandHandler
         
         foreach (var client in clients)
         {
-            if (client.Stream == currentStream) continue; // Don't notify the uploader
+            if (client.Stream == currentStream) continue; // dont notify the uploader
             
             try
             {
@@ -70,7 +70,7 @@ public class PutFileHandler : ICommandHandler
             }
             catch (Exception ex)
             {
-                // Client might have disconnected, ignore
+                // client might have disconnected, ignore
                 Console.WriteLine($"Failed to notify client: {ex.Message}");
             }
         }
