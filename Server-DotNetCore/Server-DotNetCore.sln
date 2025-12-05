@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-DotNetCore", "Server
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-DotNetCore.API", "Server-DotNetCore.API\Server-DotNetCore.API.csproj", "{FAFCB5E7-E8B5-46C6-9A9E-8FB039726318}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-DotNetCore.Tests", "Server-DotNetCore.Tests\Server-DotNetCore.Tests.csproj", "{BF791EB8-1F74-4C68-AFC5-D157E3A5ECBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +21,9 @@ Global
 		{FAFCB5E7-E8B5-46C6-9A9E-8FB039726318}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAFCB5E7-E8B5-46C6-9A9E-8FB039726318}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAFCB5E7-E8B5-46C6-9A9E-8FB039726318}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF791EB8-1F74-4C68-AFC5-D157E3A5ECBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF791EB8-1F74-4C68-AFC5-D157E3A5ECBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF791EB8-1F74-4C68-AFC5-D157E3A5ECBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF791EB8-1F74-4C68-AFC5-D157E3A5ECBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
