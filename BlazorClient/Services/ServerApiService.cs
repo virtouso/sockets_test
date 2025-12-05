@@ -23,7 +23,7 @@ public class ServerApiService
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<CountResponse>("http://localhost:5000/api/clientcount");
+            var response = await _httpClient.GetFromJsonAsync<CountResponse>("/api/stats/active-clients");
             return response?.Count ?? 0;
         }
         catch
@@ -36,7 +36,7 @@ public class ServerApiService
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<CountResponse>("http://localhost:5000/api/filecount");
+            var response = await _httpClient.GetFromJsonAsync<CountResponse>("/api/stats/file-count");
             return response?.Count ?? 0;
         }
         catch

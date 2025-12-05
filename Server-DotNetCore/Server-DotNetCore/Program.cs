@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Server_DotNetCore.Config;
+using Server_DotNetCore.Services;
 using System.Linq;
 
 namespace Server_DotNetCore;
@@ -11,10 +12,18 @@ class Program
     private static readonly SemaphoreSlim ClientLimit = new SemaphoreSlim(MaxClients);
     private static readonly HashSet<ServerClient> ConnectedClients = new HashSet<ServerClient>();
     private static readonly object ClientsLock = new object();
+    private static RedisService? _redisService;
 
     static async Task Main(string[] args)
     {
         Directory.CreateDirectory("server_files");
+
+        // Initialize Redis connection
+        var redisConnectionString = Environment.GetEnvironmentVariable("Redis__ConnectionString") ?? "localhost:6379";
+        _redisService = new RedisService(redisConnectionString);
+
+        // Initialize file count in Redis
+        await UpdateFileCountInRedisAsync();
 
         TcpListener listener = new TcpListener(IPAddress.Any, ServerConfig.Port);
         listener.Start();
@@ -26,6 +35,7 @@ class Program
             Console.WriteLine("Shutdown requested...");
             e.Cancel = true;
             cts.Cancel();
+            _redisService?.Dispose();
         };
 
         Console.WriteLine($"TCP server listening on port {ServerConfig.Port} (max {MaxClients} clients)");
@@ -60,6 +70,7 @@ class Program
                     {
                         ConnectedClients.Add(sc);
                     }
+                    await UpdateActiveUsersInRedisAsync();
                     await sc.StartAsync();
                 }
                 catch (Exception ex)
@@ -74,6 +85,7 @@ class Program
                         {
                             ConnectedClients.Remove(sc);
                         }
+                        await UpdateActiveUsersInRedisAsync();
                     }
                     client.Close();
                     ClientLimit.Release();
@@ -91,6 +103,36 @@ class Program
         lock (ClientsLock)
         {
             return ConnectedClients.ToList();
+        }
+    }
+
+    public static async Task UpdateFileCountInRedisAsync()
+    {
+        if (_redisService == null) return;
+        
+        try
+        {
+            string[] files = Directory.GetFiles("server_files");
+            await _redisService.UpdateFileCountAsync(files.Length);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating file count in Redis: {ex.Message}");
+        }
+    }
+
+    public static async Task UpdateActiveUsersInRedisAsync()
+    {
+        if (_redisService == null) return;
+        
+        try
+        {
+            int count = GetConnectedClients().Count;
+            await _redisService.UpdateActiveUsersAsync(count);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating active users in Redis: {ex.Message}");
         }
     }
 }

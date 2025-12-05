@@ -40,6 +40,9 @@ public class PutFileHandler : ICommandHandler
 
         // Notify other clients about the upload
         await NotifyOtherClientsAsync(fileName);
+        
+        // Update file count in Redis
+        await Program.UpdateFileCountInRedisAsync();
     }
 
     private async Task NotifyOtherClientsAsync(string fileName)
