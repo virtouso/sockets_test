@@ -1,0 +1,65 @@
+## .NET Core / C# ##
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+*.log
+*.vspscc
+*.vssscc
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options directory
+.vs/
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## JetBrains Rider / IntelliJ IDEA
+.idea/
+*.sln.iml
+*.csproj.user
+*.DotSettings.user
+
+## User-specific files
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+## Blazor WebAssembly specific
+wwwroot/_framework/
+wwwroot/_content/
+*.blazor.*.js
+*.blazor.*.wasm
+*.blazor.*.gz
+
+## Build results
+*.dll
+*.exe
+*.pdb
+*.cache
+
+## OS files
+.DS_Store
+Thumbs.db
+

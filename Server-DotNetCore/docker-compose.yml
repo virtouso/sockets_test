@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Server-DotNetCore/Dockerfile
+    container_name: socket-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - server_files:/app/server_files
+    restart: unless-stopped
+
+volumes:
+  server_files:
+    driver: local
+

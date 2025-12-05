@@ -1,0 +1,94 @@
+﻿@page "/"
+@using BlazorClient.Services
+@inject ServerApiService ApiService
+@implements IDisposable
+
+<PageTitle>Server Statistics</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Server Statistics</h1>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Connected Clients</h5>
+                    @if (clientCount == -1)
+                    {
+                        <p class="card-text text-danger">Error loading client count</p>
+                    }
+                    else
+                    {
+                        <h2 class="card-text text-primary">@clientCount</h2>
+                    }
+                    <button class="btn btn-primary btn-sm" @onclick="RefreshClientCount">Refresh</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Files on Server</h5>
+                    @if (fileCount == -1)
+                    {
+                        <p class="card-text text-danger">Error loading file count</p>
+                    }
+                    else
+                    {
+                        <h2 class="card-text text-success">@fileCount</h2>
+                    }
+                    <button class="btn btn-success btn-sm" @onclick="RefreshFileCount">Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <button class="btn btn-info" @onclick="RefreshAll">Refresh All</button>
+    </div>
+</div>
+
+@code {
+    private int clientCount = 0;
+    private int fileCount = 0;
+    private System.Threading.Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAll();
+        
+        // Auto-refresh every 5 seconds
+        refreshTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await RefreshAll();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    }
+
+    private async Task RefreshClientCount()
+    {
+        clientCount = await ApiService.GetClientCountAsync();
+    }
+
+    private async Task RefreshFileCount()
+    {
+        fileCount = await ApiService.GetFileCountAsync();
+    }
+
+    private async Task RefreshAll()
+    {
+        await Task.WhenAll(
+            RefreshClientCount(),
+            RefreshFileCount()
+        );
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+}
