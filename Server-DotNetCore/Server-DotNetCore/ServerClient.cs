@@ -24,7 +24,7 @@ public class ServerClient
             { Command.PutFile, new PutFileHandler(this) },
             { Command.Ping, new PingHandler() }
         };
-    }
+    } 
 
     public NetworkStream Stream => _stream;
 
@@ -37,6 +37,7 @@ public class ServerClient
 
             if (_handlers.TryGetValue(cmd, out var handler))
             {
+                Console.Write("Message Received");
                 await handler.HandleAsync(_stream);
             }
             else

@@ -16,6 +16,7 @@ services:
       context: .
       dockerfile: Server-DotNetCore/Dockerfile
     container_name: socket-server
+
     ports:
       - "8080:8080"
     volumes:

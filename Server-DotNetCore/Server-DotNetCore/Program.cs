@@ -42,15 +42,16 @@ class Program
 
         while (!cts.Token.IsCancellationRequested)
         {
+         
             var acceptTask = listener.AcceptTcpClientAsync();
             var completed = await Task.WhenAny(acceptTask, Task.Delay(200, cts.Token));
-
+         
             if (completed != acceptTask)
                 continue;
-
+        
             TcpClient client = acceptTask.Result;
 
-            if (!await ClientLimit.WaitAsync(0))
+            if (!await ClientLimit.WaitAsync(0, cts.Token))
             {
                 Console.WriteLine("Too many clients — refusing connection.");
                 using (var ns = client.GetStream())
@@ -58,7 +59,7 @@ class Program
                 client.Close();
                 continue;
             }
-
+          
             _ = Task.Run(async () =>
             {
                 ServerClient? sc = null;
@@ -71,6 +72,7 @@ class Program
                         ConnectedClients.Add(sc);
                     }
                     await UpdateActiveUsersInRedisAsync();
+           
                     await sc.StartAsync();
                 }
                 catch (Exception ex)

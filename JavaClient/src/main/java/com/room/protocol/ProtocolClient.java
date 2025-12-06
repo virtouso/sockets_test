@@ -107,7 +107,7 @@ public class ProtocolClient {
         synchronized (readLock) {
             int r = in.read();
             if (r == -1) {
-                throw new IOException("Connection closed");
+                throw new IOException("connection closed");
             }
             return r == 1;
         }
@@ -143,10 +143,10 @@ public class ProtocolClient {
                                 }
                             }
                         }
-                        Thread.sleep(100); // Small delay to avoid busy waiting
+                        Thread.sleep(100); // small delay to avoid busy waiting
                     }
                 } catch (IOException e) {
-                    // Connection closed or error
+                    // connection closed or error
                     notificationListenerRunning.set(false);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

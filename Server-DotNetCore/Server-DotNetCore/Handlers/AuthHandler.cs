@@ -16,6 +16,7 @@ public class AuthHandler : ICommandHandler
 
     public async Task HandleAsync(NetworkStream stream)
     {
+        Console.WriteLine("Received Auth Request");
         int usernameLen = await SocketExtensions.ReadInt32Async(stream);
         var username = Encoding.UTF8.GetString(await SocketExtensions.ReadBytesAsync(stream, usernameLen));
 
