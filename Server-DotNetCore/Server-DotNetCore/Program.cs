@@ -44,8 +44,8 @@ class Program
         {
          
             var acceptTask = listener.AcceptTcpClientAsync();
-           // var completed = acceptTask;//await Task.WhenAny(acceptTask, Task.Delay(200, cts.Token));
-            var completed = await Task.WhenAny(acceptTask, Task.Delay(200, cts.Token));
+            var completed = acceptTask;//await Task.WhenAny(acceptTask, Task.Delay(200, cts.Token));
+           // var completed = await Task.WhenAny(acceptTask, Task.Delay(50, cts.Token));
          
             if (completed != acceptTask)
                 continue;

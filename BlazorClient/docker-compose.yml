@@ -1,0 +1,22 @@
+version: '3.8'
+
+# its for production and need right config for it. for testing only run the project inside editor to just simply connect it to localhost
+
+services:
+  blazor-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blazor-client
+    ports:
+      - "6000:80" 
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - blazor-network
+
+networks:
+  blazor-network:
+    driver: bridge
+

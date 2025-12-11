@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"GoClient/internal/commands"
 	"GoClient/internal/protocol"
@@ -16,6 +18,7 @@ type Client struct {
 	protocolClient *protocol.Client
 	commandRegistry *commands.Registry
 	authenticated  bool
+	autoDownloadInProgress int32 // Atomic flag: 1 = auto-download in progress, 0 = not in progress
 }
 
 func NewClient(serverAddr string) (*Client, error) {
@@ -34,22 +37,41 @@ func NewClient(serverAddr string) (*Client, error) {
 	}
 	
 	// Set up auto-download callback for notifications
+	// Download ALL missing files when a notification arrives (same as download command)
 	protocolClient.SetOnFileUploadedCallback(func(fileName string) {
 		fmt.Printf("\n[Notification] File uploaded: %s\n", fileName)
-		fmt.Println("[Auto-download] Downloading missing files...")
 		
-		ctx := &commands.Context{
-			ProtocolClient: protocolClient,
-			Authenticated:  &client.authenticated,
+		// Prevent concurrent auto-downloads
+		if !atomic.CompareAndSwapInt32(&client.autoDownloadInProgress, 0, 1) {
+			fmt.Printf("[Auto-download] Already downloading, queuing notification for: %s\n", fileName)
+			return
 		}
 		
-		// Trigger download handler
-		downloadHandler := commands.HandleDownload
-		err := downloadHandler(ctx, []string{"download"})
-		if err != nil {
-			fmt.Printf("Error during auto-download: %v\n", err)
-		}
-		fmt.Print("> ") // Restore prompt
+		// Execute downloads in a separate goroutine using the exact same mechanism as download command
+		go func() {
+			defer atomic.StoreInt32(&client.autoDownloadInProgress, 0)
+			
+			// Wait longer to ensure notification listener has fully released all locks
+			// This is critical to prevent interference
+			time.Sleep(500 * time.Millisecond)
+			
+			fmt.Println("[Auto-download] Downloading all missing files...")
+			
+			// Use the exact same code path as typing "download" command
+			// This downloads ALL missing files, not just the one from notification
+			handler, exists := client.commandRegistry.Get("download")
+			if exists {
+				ctx := &commands.Context{
+					ProtocolClient: protocolClient,
+					Authenticated:  &client.authenticated,
+				}
+				err := handler(ctx, []string{"download"})
+				if err != nil {
+					fmt.Printf("[Auto-download] Error: %v\n", err)
+				}
+			}
+			fmt.Print("> ") // Restore prompt
+		}()
 	})
 	
 	// Start notification listener

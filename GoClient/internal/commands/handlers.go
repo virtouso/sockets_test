@@ -86,22 +86,41 @@ func HandleDownload(ctx *Context, args []string) error {
 	}
 
 	downloaded := 0
+	failed := 0
+	const maxRetries = 3
+	
 	for _, filename := range serverFiles {
 		if !localFileMap[filename] {
 			fmt.Printf("  Downloading: %s\n", filename)
 			savePath := filepath.Join(config.ClientFilesDir, filename)
-			err := ctx.ProtocolClient.DownloadFile(filename, savePath)
-			if err != nil {
-				return fmt.Errorf("failed to download %s: %v", filename, err)
+			
+			var err error
+			for attempt := 1; attempt <= maxRetries; attempt++ {
+				err = ctx.ProtocolClient.DownloadFile(filename, savePath)
+				if err == nil {
+					downloaded++
+					break
+				}
+				if attempt < maxRetries {
+					fmt.Printf("    Retry %d/%d for %s...\n", attempt, maxRetries-1, filename)
+				}
 			}
-			downloaded++
+			
+			if err != nil {
+				fmt.Printf("  Warning: Failed to download %s after %d attempts: %v\n", filename, maxRetries, err)
+				failed++
+			}
 		}
 	}
 
-	if downloaded == 0 {
+	if downloaded == 0 && failed == 0 {
 		fmt.Println("All files are up to date")
-	} else {
+	} else if downloaded > 0 && failed == 0 {
 		fmt.Printf("Downloaded %d file(s)\n", downloaded)
+	} else if downloaded > 0 && failed > 0 {
+		fmt.Printf("Downloaded %d file(s), failed %d file(s)\n", downloaded, failed)
+	} else {
+		fmt.Printf("Failed to download %d file(s)\n", failed)
 	}
 	return nil
 }

@@ -28,6 +28,9 @@ public class GetFileHandler : ICommandHandler
         int read;
         while ((read = await fs.ReadAsync(buffer, 0, buffer.Length)) > 0)
             await stream.WriteAsync(buffer.AsMemory(0, read));
+        
+        // Ensure all data is flushed to the network
+        await stream.FlushAsync();
     }
 }
 

@@ -14,25 +14,51 @@ public class Client {
     private final CommandRegistry commandRegistry;
     private final CommandContext context;
     private final ProtocolClient protocolClient;
+    private volatile boolean autoDownloadInProgress = false;
 
     public Client(InputStream in, OutputStream out) {
         this.commandRegistry = new CommandRegistry();
         // Wrap input stream with BufferedInputStream to support mark/reset for notification listening
-        BufferedInputStream bufferedIn = new BufferedInputStream(in, 8192);
+        // Use larger buffer (64KB) to ensure mark/reset works reliably
+        BufferedInputStream bufferedIn = new BufferedInputStream(in, 65536);
         this.protocolClient = new ProtocolClient(bufferedIn, out);
         this.context = new CommandContext(protocolClient);
         
         // Set up auto-download callback for notifications
+        // Download ALL missing files when a notification arrives (same as download command)
         protocolClient.setOnFileUploadedCallback(fileName -> {
             System.out.println("\n[Notification] File uploaded: " + fileName);
-            System.out.println("[Auto-download] Downloading missing files...");
-            try {
-                DownloadHandler downloadHandler = new DownloadHandler();
-                downloadHandler.execute(context, new String[0]);
-            } catch (Exception e) {
-                System.err.println("Error during auto-download: " + e.getMessage());
+            
+            // Prevent concurrent auto-downloads
+            if (autoDownloadInProgress) {
+                System.out.println("[Auto-download] Already downloading, queuing notification for: " + fileName);
+                return;
             }
-            System.out.print("> "); // Restore prompt
+            
+            // Execute downloads in a separate thread using the exact same mechanism as download command
+            new Thread(() -> {
+                autoDownloadInProgress = true;
+                try {
+                    // Wait longer to ensure notification listener has fully released all locks
+                    // This is critical to prevent interference
+                    Thread.sleep(500);
+                    
+                    System.out.println("[Auto-download] Downloading all missing files...");
+                    
+                    // Use the exact same code path as typing "download" command
+                    // This downloads ALL missing files, not just the one from notification
+                    var handler = commandRegistry.get("download");
+                    if (handler != null) {
+                        handler.execute(context, new String[]{"download"});
+                    }
+                } catch (Exception e) {
+                    System.err.println("[Auto-download] Error: " + e.getMessage());
+                    e.printStackTrace();
+                } finally {
+                    autoDownloadInProgress = false;
+                    System.out.print("> "); // Restore prompt
+                }
+            }).start();
         });
         
         // Start notification listener

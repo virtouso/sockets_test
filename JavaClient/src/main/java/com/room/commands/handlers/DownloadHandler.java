@@ -30,21 +30,47 @@ public class DownloadHandler implements CommandHandler {
         System.out.println("Local has " + localFiles.size() + " file(s)");
 
         int downloaded = 0;
+        int failed = 0;
+        final int maxRetries = 3;
+        
         for (String filename : serverFiles) {
             if (!localFiles.contains(filename)) {
                 System.out.println("  Downloading: " + filename);
                 Path savePath = clientDir.resolve(filename);
-                context.getProtocolClient().downloadFile(filename, savePath.toString());
-                downloaded++;
+                
+                boolean success = false;
+                IOException lastError = null;
+                for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                    try {
+                        context.getProtocolClient().downloadFile(filename, savePath.toString());
+                        downloaded++;
+                        success = true;
+                        break;
+                    } catch (IOException e) {
+                        lastError = e;
+                        if (attempt < maxRetries) {
+                            System.out.println("    Retry " + attempt + "/" + (maxRetries - 1) + " for " + filename + "...");
+                        }
+                    }
+                }
+                
+                if (!success) {
+                    System.out.println("  Warning: Failed to download " + filename + " after " + maxRetries + " attempts: " + lastError.getMessage());
+                    failed++;
+                }
             } else {
                 System.out.println("  Skipping (already exists): " + filename);
             }
         }
 
-        if (downloaded == 0) {
+        if (downloaded == 0 && failed == 0) {
             System.out.println("All files are up to date");
-        } else {
+        } else if (downloaded > 0 && failed == 0) {
             System.out.println("Downloaded " + downloaded + " file(s)");
+        } else if (downloaded > 0 && failed > 0) {
+            System.out.println("Downloaded " + downloaded + " file(s), failed " + failed + " file(s)");
+        } else {
+            System.out.println("Failed to download " + failed + " file(s)");
         }
     }
 
