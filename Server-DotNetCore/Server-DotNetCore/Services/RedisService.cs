@@ -28,7 +28,7 @@ public class RedisService : IDisposable
 
     public async Task UpdateFileCountAsync(int count)
     {
-     
+        if (_db == null) return;
         
         try
         {
@@ -42,7 +42,7 @@ public class RedisService : IDisposable
 
     public async Task UpdateActiveUsersAsync(int count)
     {
-      
+        if (_db == null) return;
         
         try
         {
@@ -91,4 +91,6 @@ public class RedisService : IDisposable
         _redis?.Dispose();
     }
 }
+
+
 

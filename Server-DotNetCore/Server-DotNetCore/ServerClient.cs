@@ -37,7 +37,7 @@ public class ServerClient
 
             if (_handlers.TryGetValue(cmd, out var handler))
             {
-                Console.Write("Message Received");
+                Console.WriteLine("Message Received");
                 await handler.HandleAsync(_stream);
             }
             else
